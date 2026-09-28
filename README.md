@@ -1,25 +1,49 @@
-# *Your game here*
+# *Robot Race*
 
-## godot-game-template
+## using the [godot-game-template](https://github.com/Godot-Stammtisch-Karlsruhe/godot-game-template)
 
-A minimal template for Godot games. Works with 2D and 3D games.
+### Game Rules
+Set-up
 
-## Features
+Each player chooses a robot token and its matching archive token, and also receives three life tokens and a player mat. The players choose a race course by common consent, place numbered flags on it according to the race course chosen, and abut the Docking Panel board against the side of the map indicated by the race course chosen. In randomly determined order, each player places their robot on a starting square on the Docking Bay board with their matching archive marker under the robot.
+Preparing to move
 
-### Single- und Multilevel Betrieb
-Das Template kann über Einstellungen in `Gamemanager` entweder ein einzelnes oder eine Folge von Levels laden. Dabei ist es egal, ob es 2D oder 3D Levels sind, solange sie über ein `win()`-Signal Bescheid geben, wann sie vervollständigt wurden. Wenn man eine Folge an Levels verwendet (wie in Super Mario) können diese hintereinander geladen werden, solange sie eine einheitliche Namenskonvention mit aufsteigenden Levelzahlen haben. Zum Beispiel `level_1.tscn`, `level_2.tscn`, ...
+On each turn:
 
-### Settings und Input Remapping
-Mithilfe des `Settings`-Autoloads können einfach neue Einstellungen hinzugefügt werden (siehe Setting-Klasse), pro Setting kann ein Callback definiert werden, welches eine Änderung der entsprechenden Einstellung behandelt (z.B. Grafikvoreinstellung geändert -> Update alle Viewports). Das Settings-System hat auch eingebaute Unterstützung für Input-Remapping (2 Slots pro Action). Das Template kommt mit einem Einstellungsmenü, worüber die Zuweisung während der Laufzeit dynamisch geändert werden kann; dabei werden alle Inputs unterstützt, die Godot kennt. Häufig benötigte Einstellungen wie Vollbild-Modus, Lautstärke, etc. sind bereits vorhanden
+    The Program card deck is shuffled and nine cards are dealt to each player.
+        For each point of robot damage, the number of cards is reduced by 1.
+    Players plan how to get to the first numbered flag, choose five Program cards from their hand as the robot's next five moves, and place the cards in order facedown on the table.
+        When all players but one have chosen their cards, the 30-second sand timer is started. If this runs out while the last player is still choosing cards, the player's cards are chosen at random from the player's hand.
+    Unused cards are placed in a discard pile.
 
-### Umfangreicher Credit Screen
-Die Inhalte des Credit-Screens werden aus `credits.json` eingelesen. Dort kann Name, Beschreibung, Lizenz und URL eines Assets angegeben werden. Standardmäßig sorgt der Credit Screen nicht nur dafür, dass die MIT Lizenz dieses Templates von darauf basierenden eingehalten wird, sondern er erfüllt (nach bestem Wissen) auch die Bedingungen zum crediten von Godot selbst.
+Movement
 
-### Optionale Tests inklusive GitHub Action
-Im `with-tests`-Branch ist GdUnit4 aufgesetzt inclusive eines kleinen Tests, der testet, ob der zentrale Gamemanager gestartet werden kann. Zusätzlich enthält dieser Branch auch eine bereits aufgesetzte GitHub Action, die alle Tests mit jedem Commit ausführt. So wird es schnell ersichtlich, ob die aktuellste Version des Spiels überhaupt ausführbar ist.
+    Each player simultaneously reveals their first Program card. The player with the highest numbered Program card moves first, followed by each player in order of descending Program card values.
+        If the robot hits a wall, it cannot proceed.
+        If a robot hits another robot, it pushes the second robot in front of it.
 
-### Ingame Debug Panel
-Um wichtige Werte immer im Augenwinkel zu haben verfügt das Template über eine Debug Anzeige in der linken oberen Ecke. Über das `DebugGlobal`können Werte zur Debug Anzeige hinzugefügt werden. Die Sichtbarkeit kann über die, in der InputMap bereits definierten, `toggle_debug_label`-Action getoggelt werden.
+End of phase
 
-### Spiel pausieren
-Wenn die `pause`-Action der InputMap in einem Level ausgeführt wird, wird ein Pausemenü angezeigt, indem das Level beendet, -fortgeführt, oder Einstellungen angepasst werden. Wenn der `ProcessMode` der Levels auf "Pausable" gesetzt ist, werden die Aktivitäten im Level mitpausiert, solange das Pausemanü angezeigt wird.
+After everyone has moved (called a "phase")
+
+    the express conveyor belts move any robots on it one space in the direction of its arrows, rotating as the space they move on to.
+    the slow and express conveyor belts move any robots one space in the direction of its arrows, rotating as the space they move on to.
+    pushers push if active for that register phase.
+    gears rotate robots either 90 degrees clockwise or counterclockwise as indicated by their directional arrows
+    every board laser and robot fires a high intensity laser down the row of squares in front of them. If the beam hits a robot before being stopped by a wall, the target robot takes a point of damage.
+    crushers activate, destroying any robot on them.
+    If a robot ends a phase on a wrench or numbered flag, the player moves the robot's archive marker to that flag. If the robot was seeking that flag, the player now attempts to reach the next numbered flag.
+    If a robot ends a turn on any repair site (a space with a wrench), the robot's archive marker is moved to that spot.
+    If a robot ends a turn on a space with one wrench, one point of damage is repaired.
+    If a robot ends a turn on a space with two wrenches, two points of damage are repaired OR the robot receives a random upgrade card.
+    If a robot ends a turn on a space with a wrench and a hammer, one point of damage is repaired, AND the robot receives a random upgrade card.
+
+Play then returns to the beginning of the next turn.
+
+A player can choose to totally repair their robot by announcing, a turn in advance while programming their robot, that their robot will "power down" at the end of the coming turn. The robot plays the programmed turn, then shuts down for the entire next turn to repair itself. The robot returns to 100% status at the end of the turn. Any damage taken during the repair turn reduces the robot's current point total before repairs, and may destroy the robot before it completes its repairs.
+Robot destruction
+
+If a robot takes more than 9 points of damage, or falls down a pit or drives off the board or is pushed off the board, the robot is destroyed. The player loses a Life token, and a clone of the robot with two damage returns at the start of the next turn on the robot's archive marker. If a player runs out of Life tokens, (four robots destroyed), the player is out of the game.
+Victory conditions
+
+The first robot to touch the final numbered flag is the winner.
